@@ -1,0 +1,78 @@
+apply plugin: 'com.android.library'
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.3'
+    }
+}
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+dependencies {
+}
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 23
+//        applicationId 'io.vov.vitamio'
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            jniLibs.srcDirs = ['libs']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+
+    }
+//程序在编译的时候会检查lint，有任何错误提示会停止build，我们可以关闭这个开关
+    lintOptions {
+        abortOnError false
+        //即使报错也不会停止打包
+        checkReleaseBuilds false
+        //打包release版本的时候进行检测
+    }
+//    packagingOptions {
+//        exclude 'META-INF/LICENSE.txt'
+//        exclude 'META-INF/NOTICE.txt'
+//    }
+}
+//task to delete the old jar
+/*task deleteOldJar(type: Delete) {
+    delete 'release/vitamio_v1.0.jar'
+}
+//task to export contents as jar
+task exportJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    from fileTree(dir: 'src/main', includes: ['assets*//**'])
+ into('release/')
+ include('classes.jar')
+ ///Rename the jar
+ rename('classes.jar', 'vitamio_v1.0.jar')
+ }
+ exportJar.dependsOn(deleteOldJar, build)*/
+def SDK_BASENAME = "sdk";
+def SDK_VERSION = "_V1.0";
+def sdkDestinationPath = "build";
+def zipFile = file('build/intermediates/bundles/release/classes.jar')
+task deleteBuild(type: Delete) {
+    delete sdkDestinationPath + SDK_BASENAME + SDK_VERSION + ".jar"
+}
+task makeJar(type: Jar) {
+    from zipTree(zipFile)
+    from fileTree(dir: '/', includes: ['assets*', 'res*', 'libs*'])
+
+
+    baseName = SDK_BASENAME + SDK_VERSION
+    destinationDir = file(sdkDestinationPath)
+}
+makeJar.dependsOn(deleteBuild, build)
